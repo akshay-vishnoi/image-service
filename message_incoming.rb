@@ -16,7 +16,7 @@ conn = Bunny.new(:automatically_recover => false)
 conn.start
 
 ch   = conn.create_channel
-q    = ch.queue('image_dimensions')
+q    = ch.queue('image_cropper')
 q2   = ch.queue('image_path')
 
 begin
@@ -24,7 +24,7 @@ begin
   q.subscribe(:block => true) do |delivery_info, properties, body|
     cropped_file_path = send_cropped_image_path(YAML.load(body))
     puts " [x] Received #{cropped_file_path}"
-    ch.default_exchange.publish(cropped_file_path, :routing_key => q2.name)
+    # ch.default_exchange.publish(cropped_file_path, :routing_key => q2.name)
   end
 rescue Interrupt => _
   conn.close

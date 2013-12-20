@@ -31,8 +31,8 @@ class Cropper
 
   private
     def copy_file_to_tmp_folder
-      file = URI(@file_path).open
-      self.src_path = file.to_path  
+      file = URI.send(:open, @file_path)
+      self.src_path = file.to_path
     end
 
     def cropped_image
