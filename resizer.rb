@@ -3,7 +3,7 @@ require 'debugger'
 
 class Resizer
 
-  attr_accessor :src_path, :dest_path, :file, :styles
+  attr_accessor :src_path, :dest_path, :file, :styles, :images
 
   def initialize(options={})
     @file_path = options[:path]
@@ -17,11 +17,11 @@ class Resizer
 
   def save
     begin
-      images = []
+      self.images = []
       styles.each do |key, style|
-        images << thumbnail_image_for(style)
+        self.images << thumbnail_image_for(style)
       end
-      images
+      self.images
       true
     rescue Exception => e
       puts e.message

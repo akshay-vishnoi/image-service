@@ -17,15 +17,15 @@ end
 def generate_resized_thumbnails(message_body = nil)
   resizer = Resizer.new(message_body)
   resizer.save
-  resizer.dest_path
+  resizer.images
 end
 
-def determine_type(params)
+def generate_image_according_to_type(params)
   if params[:type] == "crop"
     cropped_file_path = send_cropped_image_path(params)
     puts " [x] Received #{cropped_file_path}"
   else
-    thumbnail_files = generate_resized_thumbnails params
+    thumbnail_files = generate_resized_thumbnails(params)
     puts " [x] Received #{thumbnail_files}"
   end
 end
@@ -39,7 +39,7 @@ q2  = ch.queue('image_path')
 begin
   puts " [*] Waiting for messages. To exit press CTRL+C"
   q.subscribe(:block => true) do |delivery_info, properties, body|
-    determine_type(YAML.load(body))
+    generate_image_according_to_type(YAML.load(body))
   end
 rescue Interrupt => _
   conn.close
