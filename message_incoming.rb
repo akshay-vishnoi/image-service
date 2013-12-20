@@ -3,13 +3,29 @@
 
 require 'bunny'
 require 'debugger'
+
 require_relative 'cropper'
+require_relative 'resizer'
 
 def send_cropped_image_path(params = nil)
   file_info = params || get_image_path
   cropper = Cropper.new(file_info[:path], file_info)
   cropper.save
   cropper.dest_path
+end
+
+def generate_resized_thumbnails(message_body = nil)
+  resizer = Resizer.new(message_body)
+  resizer.save
+  resizer.images
+end
+
+def generate_image_according_to_type(params)
+  if params[:type] == "crop"
+    send_cropped_image_path(params)
+  else
+    generate_resized_thumbnails(params)
+  end
 end
 
 conn = Bunny.new(:automatically_recover => false)
@@ -22,12 +38,12 @@ path_queue   = ch.queue('image_path')
 begin
   puts " [*] Waiting for messages. To exit press CTRL+C"
   cropper_queue.subscribe(:block => true) do |delivery_info, properties, body|
-    cropped_file_path = send_cropped_image_path(YAML.load(body))
-    puts " [x] Received #{cropped_file_path}"
-    ch.default_exchange.publish(cropped_file_path, :routing_key => path_queue.name)
+    # debugger
+    # p 'aksjdaj'
+    gen_file_path = generate_image_according_to_type(YAML.load(body))
+    ch.default_exchange.publish(gen_file_path, :routing_key => path_queue.name)
   end
 rescue Interrupt => _
   conn.close
-
   exit(0)
 end
