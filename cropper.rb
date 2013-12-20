@@ -12,7 +12,7 @@ class Cropper
     self.crop_y = options[:crop_y]
     self.width  = options[:width]
     self.height = options[:height]
-    self.dest_path = "/tmp/new_#{ Time.now.to_s.gsub(' ', '_') }.#{ get_image_extension }"
+    self.dest_path = @file_path.gsub('original', 'cropped')
   end
 
   def get_image_extension
@@ -37,6 +37,12 @@ class Cropper
 
     def cropped_image
       copy_file_to_tmp_folder
+      cropped_image_path = "#{src_path.split('original')[0]}/cropped"
+      if File.exists?(cropped_image_path)
+        FileUtils.rm_rf("#{cropped_image_path}/.", secure: true)
+      else
+        Dir.mkdir(File.join(src_path.split('original')[0], 'cropped'), 0700)
+      end
       Paperclip.run('convert', ":src -crop '#{width.to_i}x#{height.to_i}+#{crop_x.to_i}+#{crop_y.to_i}' :dest", {:src => src_path, :dest => dest_path })
       @file = File.open(dest_path)
     end
