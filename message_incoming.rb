@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 require 'bunny'
-require 'debugger'
 
 require_relative 'cropper'
 require_relative 'resizer'
@@ -38,10 +37,7 @@ path_queue   = ch.queue('image_path')
 begin
   puts " [*] Waiting for messages. To exit press CTRL+C"
   cropper_queue.subscribe(:block => true) do |delivery_info, properties, body|
-    # debugger
-    # p 'aksjdaj'
-    gen_file_path = generate_image_according_to_type(YAML.load(body))
-    ch.default_exchange.publish(gen_file_path, :routing_key => path_queue.name)
+    generate_image_according_to_type(YAML.load(body))
   end
 rescue Interrupt => _
   conn.close
